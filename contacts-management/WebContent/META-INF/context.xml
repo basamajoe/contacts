@@ -5,7 +5,7 @@
     <!-- Default set of monitored resources -->
     <WatchedResource>WEB-INF/web.xml</WatchedResource>
  
-   <Resource name="jdbc/testDB" auth="Container"
+   <Resource name="jdbc/javalabs" auth="Container"
         type="javax.sql.DataSource"
         maxActive="100" maxIdle="30" maxWait="10000"
         username="myuser"
