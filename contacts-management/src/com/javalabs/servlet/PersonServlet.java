@@ -3,6 +3,7 @@ package com.javalabs.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -17,7 +18,10 @@ import java.sql.Statement;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
-@WebServlet("/person.do")
+import com.javalabs.helper.Helper;
+import com.javalabs.helper.ICommand;
+
+@WebServlet("/person/*")
 public class PersonServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
  
@@ -33,7 +37,11 @@ public class PersonServlet extends HttpServlet {
 	 */
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        try {
+    	
+    	
+    	 this.doRequest(request, response);
+    	 
+        /*try {
             Connection con = ds.getConnection();
  
             Statement stmt = con.createStatement();
@@ -61,7 +69,7 @@ public class PersonServlet extends HttpServlet {
             out.print("</table></body></html>");
         } catch (SQLException e) {
             e.printStackTrace();
-        }
+        }*/
     }
     
     /**
@@ -69,5 +77,39 @@ public class PersonServlet extends HttpServlet {
 	 */
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	this.doRequest(request, response);
+    }
+    
+    private void doRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException{
+   	 
+    	Helper helper = new Helper(request);
+    	ICommand comand = helper.getCommand();
+    	String pag = comand.execute();
+    	if(pag.contains("redirect:")){    		
+    		response.sendRedirect(resoluctor(pag, request));
+    	}else if(pag.contains("json")){  
+    		PrintWriter out = response.getWriter();
+    		response.setContentType("application/json");
+    		String xml =(String) request.getAttribute("xml");
+    		out.print(xml);
+    	}else if(pag.contains("xml")){  
+    		PrintWriter out = response.getWriter();
+    		response.setContentType("application/xml");
+    		String xml =(String) request.getAttribute("xml");
+    		out.print(xml);
+    	}else{
+    		RequestDispatcher rd =request.getRequestDispatcher(pag);
+    		
+        	rd.forward(request, response);
+    	}
+    	
+    }
+    private String resoluctor(String pag, HttpServletRequest request){
+    	String pags ="";
+    	String path = request.getContextPath();
+    	String [] redi = pag.split(":");
+    	pags =path+"/"+redi[1];
+    	return pags;
     }
 }

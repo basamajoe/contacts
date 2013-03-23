@@ -1,0 +1,53 @@
+.container{
+	border: 1px solid black;
+	margin: 0 auto;
+	width: 960px;
+	padding: 5px;
+	
+}
+#header{
+	padding: 5px;
+}
+
+#pers fieldset{
+	width: 310px;
+}
+#pers fieldset ul, #pers fieldset li{
+border:0; margin:0; padding:0; list-style:none;
+}
+#pers fieldset li{
+clear:both;
+list-style:none;
+padding-bottom:10px;
+}
+
+#pers fieldset input{
+float:left;
+}
+#pers fieldset label{
+width:140px;
+float:left;
+}
+
+.divButton{
+	clear: both;
+	margin-top: 30px;
+	margin-left: 30px;
+}
+.divButton button {
+	margin-right: 20px;
+}
+
+.link-person{
+	margin: 5px;
+}
+.link-person a{
+	color: blue;
+	font-size: 23px;
+}
+table {
+	border: 1px solid black;
+	padding: 5px;
+}
+
+
