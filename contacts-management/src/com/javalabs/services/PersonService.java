@@ -90,7 +90,7 @@ public class PersonService implements ICommand {
 		if (method.equalsIgnoreCase("post")) {
 			try {
 				personDAO.addPerson(populate());
-				request.setAttribute("message", "Person add success");
+				request.setAttribute("message", "Person added successfully!");
 				page ="redirect:person";
 			} catch (SQLException e) {
 				request.setAttribute("error", e.getMessage());

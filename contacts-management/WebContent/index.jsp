@@ -37,9 +37,6 @@
 		<div>
       <h1>Contact management</h1>
 			<h2> <c:out value="${message}"></c:out> </h2>
-			<div class="link-person">
-				<a href="<c:out value="${url}person/new" escapeXml="true" />">Add new person</a>
-			</div>
 		</div>
 		<div id="form">
 		</div>
