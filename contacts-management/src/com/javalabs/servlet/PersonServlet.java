@@ -21,6 +21,12 @@ import javax.sql.DataSource;
 import com.javalabs.helper.Helper;
 import com.javalabs.helper.ICommand;
 
+/**
+ * Person Servlet
+ *
+ * @since 24 Mar 2012
+ * @version .0 24 Mar 2012
+ */
 @WebServlet("/person/*")
 public class PersonServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
@@ -38,38 +44,8 @@ public class PersonServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
     	
-    	
     	 this.doRequest(request, response);
     	 
-        /*try {
-            Connection con = ds.getConnection();
- 
-            Statement stmt = con.createStatement();
-            String query = "select * from t_person";
-            ResultSet rs = stmt.executeQuery(query);
- 
-            PrintWriter out = response.getWriter();
-            response.setContentType("text/html");
-            out.print("<center><h1>Person Details</h1></center>");
-            out.print("<html><body>");
-            out.print("<table border=\"1\" cellspacing=10 cellpadding=5>");
-            out.print("<tr><th>ID</th>");
-            out.print("<th>First Name</th>");
-            out.print("<th>Last Name </th>");
-            out.print("<th>Date of birth</th></tr>");
- 
-            while (rs.next()) {
-                out.print("<tr>");
-                out.print("<td>" + rs.getLong("id") + "</td>");
-                out.print("<td>" + rs.getString("firstName") + "</td>");
-                out.print("<td>" + rs.getString("lastName") + "</td>");
-                out.print("<td>" + rs.getDate("dob") + "</td>");
-                out.print("</tr>");
-            }
-            out.print("</table></body></html>");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }*/
     }
     
     /**
@@ -80,36 +56,54 @@ public class PersonServlet extends HttpServlet {
     	this.doRequest(request, response);
     }
     
-    private void doRequest(HttpServletRequest request, HttpServletResponse response)
+    /**
+     * Description of the method {@link URL}.
+ 	 * <p>
+ 	 * Explain the method features. 
+ 	 * 
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+    private void doRequest(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException{
    	 
-    	Helper helper = new Helper(request);
+    	Helper helper = new Helper(req);
     	ICommand comand = helper.getCommand();
     	String pag = comand.execute();
+    	
     	if(pag.contains("redirect:")){    		
-    		response.sendRedirect(resoluctor(pag, request));
-    	}else if(pag.contains("json")){  
-    		PrintWriter out = response.getWriter();
-    		response.setContentType("application/json");
-    		String xml =(String) request.getAttribute("xml");
+    		resp.sendRedirect(resoluctor(pag, req));
+    	} else if(pag.contains("json")) {  
+    		PrintWriter out = resp.getWriter();
+    		resp.setContentType("application/json");
+    		String xml = (String) req.getAttribute("xml");
     		out.print(xml);
-    	}else if(pag.contains("xml")){  
-    		PrintWriter out = response.getWriter();
-    		response.setContentType("application/xml");
-    		String xml =(String) request.getAttribute("xml");
+    	} else if(pag.contains("xml")) {  
+    		PrintWriter out = resp.getWriter();
+    		resp.setContentType("application/xml");
+    		String xml = (String) req.getAttribute("xml");
     		out.print(xml);
-    	}else{
-    		RequestDispatcher rd =request.getRequestDispatcher(pag);
+    	} else {
+    		RequestDispatcher rd = req.getRequestDispatcher(pag);
     		
-        	rd.forward(request, response);
+        	rd.forward(req, resp);
     	}
     	
     }
-    private String resoluctor(String pag, HttpServletRequest request){
-    	String pags ="";
-    	String path = request.getContextPath();
+    
+    /**
+     * 
+     * @param pag
+     * @param req
+     * @return			
+     */
+    private String resoluctor(String pag, HttpServletRequest req){
+    	String pags = "";
+    	String path = req.getContextPath();
     	String [] redi = pag.split(":");
-    	pags =path+"/"+redi[1];
+    	pags = path + "/" + redi[1];
     	return pags;
     }
 }

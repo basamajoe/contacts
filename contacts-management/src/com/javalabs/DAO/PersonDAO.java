@@ -23,6 +23,11 @@ public class PersonDAO extends ConnectToRDBMS {
 	
 	}
 
+	/**
+	 * 
+	 * @param person
+	 * @throws SQLException
+	 */
 	public void addPerson(Person person) throws SQLException {
 		try {
 			connection = getConnection();
@@ -34,13 +39,18 @@ public class PersonDAO extends ConnectToRDBMS {
 			preparedStatement.setDate(3, new Date(person.getDob().getTime()));
 			preparedStatement.executeUpdate();
 		} catch (SQLException e) {
-			throw new SQLException(e);
+			throw e;
 		}finally{
 			closeStatement(preparedStatement);
 			closeConnection(connection);
 		}
 	}
 
+	/**
+	 * 
+	 * @param id
+	 * @throws SQLException
+	 */
 	public void deletePerson(int id) throws SQLException {
 		try {
 			connection = getConnection();
@@ -58,6 +68,11 @@ public class PersonDAO extends ConnectToRDBMS {
 		}
 	}
 
+	/**
+	 * 
+	 * @param person
+	 * @throws SQLException
+	 */
 	public void updatePerson(Person person) throws SQLException {
 		try {
 			connection = getConnection();
@@ -73,15 +88,22 @@ public class PersonDAO extends ConnectToRDBMS {
 
 		} catch (SQLException e) {
 			throw new SQLException(e);
-		}finally{
+		} finally {
 			closeStatement(preparedStatement);
 			closeConnection(connection);
 		}
 	}
 
+	/**
+	 * 
+	 * @return				an abstract list of all the persons
+	 * @throws SQLException
+	 */
 	public List<Person> getAllPersons() throws SQLException {
+		
 		List<Person> persons = new ArrayList<Person>();
 		Statement statement = null;
+		
 		try {
 			connection = getConnection();
 			statement = connection.createStatement();
@@ -96,7 +118,7 @@ public class PersonDAO extends ConnectToRDBMS {
 			}
 		} catch (SQLException e) {
 			throw new SQLException(e);
-		}finally{
+		} finally {
 			closeResulset(rs);
 			closeStatement(statement);
 			closeConnection(connection);
@@ -105,24 +127,35 @@ public class PersonDAO extends ConnectToRDBMS {
 		return persons;
 	}
 
-	public Person getPersonById(int personId) throws SQLException {
-		Person person = new Person();
+	/**
+	 * 
+	 * @param id
+	 * @return				the person with its data or null otherwise
+	 * @throws SQLException
+	 */
+	public Person getPersonById(int id) throws SQLException {
+		
+		Person person = null;
+		
 		try {
 			connection = getConnection();
 			preparedStatement = connection.
 					prepareStatement("select * from t_person where id=?");
-			preparedStatement.setInt(1, personId);
+			preparedStatement.setInt(1, id);
 			rs = preparedStatement.executeQuery();
 
 			if (rs.next()) {
+				person = new Person();
 				person.setId(rs.getInt("id"));
 				person.setFirstName(rs.getString("firstname"));
 				person.setLastName(rs.getString("lastname"));
 				person.setDob(rs.getDate("dob"));
 			}
+			
 		} catch (SQLException e) {
-			throw new SQLException(e);
-		}finally{
+			e.printStackTrace();
+			throw e;
+		} finally {
 			closeResulset(rs);
 			closeStatement(preparedStatement);
 			closeConnection(connection);
