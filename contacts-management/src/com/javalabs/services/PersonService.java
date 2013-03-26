@@ -31,34 +31,12 @@ public class PersonService implements ICommand {
 	public PersonService(HttpServletRequest req) {
 		this.request = req;
 		method = req.getMethod();
-		path =req.getRequestURI();
+		path = req.getRequestURI();
 		personDAO = new PersonDAO();
-	}
-
-	@Override
-	public String execute() {
-		return handler();
 	}
 
 	public void setRequest(HttpServletRequest req) {
 		this.request = req;
-	}
-	
-	private String handler(){
-		
-		String page = "/index.jsp";
-		
-		if (path.contains("person/new")) {
-			return this.addPerson();
-		} else if (path.contains("person/update")) {
-			return this.updatePerson();
-		} else if (path.contains("person/delete")) {
-			this.delPerson();
-			page = "redirect:person";
-		} else {
-			return listPersons(null);
-		}
-		return page;
 	}
 	
 	/**
@@ -73,9 +51,11 @@ public class PersonService implements ICommand {
 			request.setAttribute("message", e.getMessage());
 			e.printStackTrace();
 		}
+		
 		if (pag != null) {
 			return pag;
 		}
+		
 		return "/index.jsp";
 		
 	}
@@ -85,21 +65,21 @@ public class PersonService implements ICommand {
 	 * @return
 	 */
 	private String addPerson(){
-		String page ="";
+		String page = "";
 		
 		if (method.equalsIgnoreCase("post")) {
 			try {
 				personDAO.addPerson(populate());
 				request.setAttribute("message", "Person added successfully!");
-				page ="redirect:person";
+				page = "redirect:person";
 			} catch (SQLException e) {
 				request.setAttribute("error", e.getMessage());
-				page ="/jsp/person.jsp"; 
+				page = "/jsp/person.jsp"; 
 				request.setAttribute("title", "Add person");
 				request.setAttribute("titleUser", "New User");
 				request.setAttribute("urls", "person/new");
+				e.printStackTrace();
 			}
-			
 		} else {
 			page = "/jsp/person.jsp"; 
 			request.setAttribute("title", "Add person");
@@ -114,14 +94,16 @@ public class PersonService implements ICommand {
 	 * 
 	 */
 	private void delPerson(){
-		String path =request.getRequestURI();
-		String [] datos =path.split("/");
+		String path = request.getRequestURI();
+		String [] datos = path.split("/");
 		String id = datos[datos.length-1];
+		
 		try {
 			personDAO.deletePerson(Integer.parseInt(id));
-			request.setAttribute("message", "Person deleted success");
+			request.setAttribute("message", "Person deleted successfully!");
 		} catch (NumberFormatException | SQLException e) {
 			request.setAttribute("error", e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	
@@ -131,13 +113,14 @@ public class PersonService implements ICommand {
 	 */
 	private String  updatePerson(){
 		String page = "";
+		
 		if (method.equalsIgnoreCase("post")) {
 			
 			try {
-				personDAO.updatePerson((populate()));				
+				personDAO.updatePerson(populate());				
 				request.setAttribute("message", "Person update success");
 				page = listPersons("redirect:person");
-			} catch (Exception e) {
+			} catch (SQLException e) {
 				request.setAttribute("error", e.getMessage());
 				person = populate();
 				person.setId(Long.valueOf(request.getParameter("id")));
@@ -146,9 +129,10 @@ public class PersonService implements ICommand {
 				e.printStackTrace();
 			}
 		} else {
-			String [] datos =path.split("/");
+			String [] datos = path.split("/");
 			String id = datos[datos.length-1];
-			if (!isNumberic(id)) {
+			
+			if (!isNumeric(id)) {
 				id = request.getParameter("id");
 			}
 			
@@ -162,7 +146,7 @@ public class PersonService implements ICommand {
 				request.setAttribute("error", e.getMessage());
 				e.printStackTrace();
 			}
-			page ="/jsp/gestionperson.jsp"; 
+			page = "/jsp/gestionperson.jsp"; 
 			request.setAttribute("urls", "person/update");
 		}
 		request.setAttribute("title", "Edit person");
@@ -199,13 +183,40 @@ public class PersonService implements ICommand {
 		return person;
 	}
 	
+	@Override
+	public String execute() {
+		return handler();
+	}
+	
+	/**
+	 * 
+	 * @param pag
+	 * @return
+	 */
+	private String handler(){
+		
+		String page = "/index.jsp";
+		
+		if (path.contains("person/new")) {
+			return this.addPerson();
+		} else if (path.contains("person/update")) {
+			return this.updatePerson();
+		} else if (path.contains("person/delete")) {
+			this.delPerson();
+			page = "redirect:person";
+		} else {
+			return listPersons(null);
+		}
+		return page;
+	}
+	
 	/**
 	 * This function checks if the string passed as an arg 
 	 * is a number.
 	 * @param num
 	 * @return boolean
 	 */
-	private boolean isNumberic(String num){
+	private boolean isNumeric(String num){
 		try {
 			Integer.parseInt(num);		
 			return true;

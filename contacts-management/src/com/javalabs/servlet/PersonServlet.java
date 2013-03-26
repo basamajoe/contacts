@@ -25,7 +25,7 @@ import com.javalabs.helper.ICommand;
  * Person Servlet
  *
  * @since 24 Mar 2012
- * @version .0 24 Mar 2012
+ * @version 0.0 24 Mar 2012
  */
 @WebServlet("/person/*")
 public class PersonServlet extends HttpServlet {
@@ -75,12 +75,12 @@ public class PersonServlet extends HttpServlet {
     	
     	if(pag.contains("redirect:")){    		
     		resp.sendRedirect(resoluctor(pag, req));
-    	} else if(pag.contains("json")) {  
+    	} else if (pag.contains("json")) {  
     		PrintWriter out = resp.getWriter();
     		resp.setContentType("application/json");
     		String xml = (String) req.getAttribute("xml");
     		out.print(xml);
-    	} else if(pag.contains("xml")) {  
+    	} else if (pag.contains("xml")) {  
     		PrintWriter out = resp.getWriter();
     		resp.setContentType("application/xml");
     		String xml = (String) req.getAttribute("xml");
@@ -104,6 +104,7 @@ public class PersonServlet extends HttpServlet {
     	String path = req.getContextPath();
     	String [] redi = pag.split(":");
     	pags = path + "/" + redi[1];
+    	
     	return pags;
     }
 }

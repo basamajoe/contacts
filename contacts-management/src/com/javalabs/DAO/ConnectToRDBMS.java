@@ -35,14 +35,14 @@ public abstract class ConnectToRDBMS {
 		
 		if (ds != null) {
 			connection = ds.getConnection();
-		} else {
+		} else { // 
 			Context initCtx = null;
 			Context envCtx;
 			try {
 				initCtx = new InitialContext();
 				envCtx = (Context) initCtx.lookup("java:comp/env");
 				ds = (DataSource) envCtx.lookup("jdbc/javalabs");
-				connection =ds.getConnection();
+				connection = ds.getConnection();
 			} catch (NamingException e) {
 				e.printStackTrace();
 			}			
@@ -57,15 +57,13 @@ public abstract class ConnectToRDBMS {
 	 */
 	protected void closeConnection(Connection con) {
 		try {
-			if(con!=null){
+			if (con != null) {
 				if(!con.isClosed()){
 					con.close();
 				}
-				
 			}
-			
 		} catch (SQLException e) {
-			System.out.println("Error al cerrar la conexion\n "+e.getMessage());
+			System.out.println("Error al cerrar la conexion\n " + e.getMessage());
 		}
 	}
 	
