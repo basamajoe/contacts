@@ -8,55 +8,88 @@ import java.text.SimpleDateFormat;
 import javax.servlet.http.HttpServletRequest;
 
 import com.javalabs.DAO.PersonDAO;
-import com.javalabs.helper.ICommand;
-import com.javalabs.model.Person;
+import com.javalabs.handler.Handler;
+import com.javalabs.handler.IAction;
+import com.javalabs.model.PersonBean;
 
-
-public class PersonService implements ICommand {
+public class PersonService implements IAction {
 
 	private HttpServletRequest request = null;
-	private Person person = null;
+	private PersonBean person = null;
 	private PersonDAO personDAO = null;
-	private String method = null;
-	private String path = null;
+	private Handler handler = null;
 	
 	public PersonService() {
-		
+		super();
 	}
 	
-	/**
-	 * 
-	 * @param request
-	 */
 	public PersonService(HttpServletRequest req) {
+		super();
 		this.request = req;
-		method = req.getMethod();
-		path = req.getRequestURI();
 		personDAO = new PersonDAO();
+		handler = new Handler(req);
 	}
-
+	
 	public void setRequest(HttpServletRequest req) {
 		this.request = req;
+		handler.setRequest(req);
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	private Integer newPerson(){
+		
+		Integer result = 0;
+
+		request.setAttribute("title", "New person");
+		request.setAttribute("formAction", "person/add");
+		
+		return result;
 	}
 	
 	/**
 	 * 
-	 * @param pag
 	 * @return
 	 */
-	private String listPersons(String pag) {
+	private Integer addPerson(){
+		
+		Integer result = 0;
+
+		if (handler.getMethod().equalsIgnoreCase("post")) {	/* Create new person */
+			try {
+				personDAO.insert(populate());
+				request.setAttribute("msg", "Person added successfully!");
+				result = 0;
+			} catch (SQLException e) {
+				request.setAttribute("err", e.getMessage());
+				e.printStackTrace();
+				result = -1;
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	private Integer lstPersons() {
+	
+		Integer result = 0;
+		
 		try {
-			request.setAttribute("persons", personDAO.getAllPersons());
+			request.setAttribute("persons", personDAO.getAllDetails());
+			result = 0;
 		} catch (SQLException e) {
-			request.setAttribute("message", e.getMessage());
+			request.setAttribute("err", e.getMessage());
 			e.printStackTrace();
+			result = -1;
 		}
 		
-		if (pag != null) {
-			return pag;
-		}
-		
-		return "/index.jsp";
+		return result;
 		
 	}
 
@@ -64,120 +97,101 @@ public class PersonService implements ICommand {
 	 * 
 	 * @return
 	 */
-	private String addPerson(){
-		String page = "";
+	private Integer  edtPerson(){
+		Integer result = 0;
 		
-		if (method.equalsIgnoreCase("post")) {
-			try {
-				personDAO.addPerson(populate());
-				request.setAttribute("message", "Person added successfully!");
-				page = "redirect:person";
-			} catch (SQLException e) {
-				request.setAttribute("error", e.getMessage());
-				page = "/jsp/person.jsp"; 
-				request.setAttribute("title", "Add person");
-				request.setAttribute("titleUser", "New User");
-				request.setAttribute("urls", "person/new");
-				e.printStackTrace();
-			}
-		} else {
-			page = "/jsp/person.jsp"; 
-			request.setAttribute("title", "Add person");
-			request.setAttribute("titleUser", "New User");
-			request.setAttribute("urls", "person/new");
+		if (handler.getMethod().equalsIgnoreCase("post")) {
+			person = populate();
+			request.setAttribute("person", person);
+			request.setAttribute("msg", "Person updated successfully!");
+			request.setAttribute("formAction", "person/upd");
 		}
 		
-		return page;
-	}
-	
-	/**
-	 * 
-	 */
-	private void delPerson(){
-		String path = request.getRequestURI();
-		String [] datos = path.split("/");
-		String id = datos[datos.length-1];
-		
-		try {
-			personDAO.deletePerson(Integer.parseInt(id));
-			request.setAttribute("message", "Person deleted successfully!");
-		} catch (NumberFormatException | SQLException e) {
-			request.setAttribute("error", e.getMessage());
-			e.printStackTrace();
-		}
+		return result;
 	}
 	
 	/**
 	 * 
 	 * @return
 	 */
-	private String  updatePerson(){
-		String page = "";
+	private Integer  updPerson(){
+		Integer result = 0;
 		
-		if (method.equalsIgnoreCase("post")) {
+		if (handler.getMethod().equalsIgnoreCase("post")) {
 			
 			try {
-				personDAO.updatePerson(populate());				
-				request.setAttribute("message", "Person update success");
-				page = listPersons("redirect:person");
-			} catch (SQLException e) {
-				request.setAttribute("error", e.getMessage());
-				person = populate();
-				person.setId(Long.valueOf(request.getParameter("id")));
+				person = personDAO.update(populate());
 				request.setAttribute("person", person);
-				page = "/jsp/person.jsp";
+				request.setAttribute("msg", "Person updated successfully!");
+				result = lstPersons();
+			} catch (SQLException e) {
+				request.setAttribute("err", e.getMessage());
+				//person = populate();
+				//person.setId(Long.valueOf(request.getParameter("id")));
+				//request.setAttribute("person", person);
 				e.printStackTrace();
+				result = -1;
+			}
+		}
+		
+		return result;
+	}
+
+	/**
+	 * 
+	 * @return id of the person deleted 
+	 * 		   -1 if an error occur
+	 */
+	private Integer delPerson(){
+		Integer result = 0;
+		
+		if (handler.getId() != 0){
+			try {
+				personDAO.delete(new PersonBean(handler.getId()));
+				request.setAttribute("msg", "Person deleted successfully!");
+			} catch (SQLException e) {
+				request.setAttribute("err", e.getMessage());
+				e.printStackTrace();
+				result = -1;
 			}
 		} else {
-			String [] datos = path.split("/");
-			String id = datos[datos.length-1];
-			
-			if (!isNumeric(id)) {
-				id = request.getParameter("id");
-			}
-			
-			if (id == null) {				
-				return listPersons("redirect:person");
-			}
-			
-			try {
-				request.setAttribute("person", personDAO.getPersonById(Integer.valueOf(id)));
-			} catch (NumberFormatException | SQLException e) {
-				request.setAttribute("error", e.getMessage());
-				e.printStackTrace();
-			}
-			page = "/jsp/gestionperson.jsp"; 
-			request.setAttribute("urls", "person/update");
+			request.setAttribute("msg", "None person was deleted.");
 		}
-		request.setAttribute("title", "Edit person");
-		request.setAttribute("titleUser", "Edit User");
-		request.setAttribute("urls", "person/update");
 		
-		return page;
+		return result;
 	}
 	
 	/**
+	 * Load parameters received from the form into a person object
+	 * or pathInfo
 	 * 
 	 * @return
 	 */
-	private Person populate(){
+	private PersonBean populate(){
+		person = new PersonBean();
+
 		String id = request.getParameter("id");
-		person = new Person();
 		
-		if (id != null) { //new
-			person.setId(Integer.valueOf(id));
-		}
-		
-		person.setFirstName(request.getParameter("firstName"));
-		person.setLastName(request.getParameter("lastName"));
-		java.util.Date date = new java.util.Date();
-		SimpleDateFormat fecha = new SimpleDateFormat("dd/MM/yyyy");
-		
-		try {
-			date = fecha.parse(request.getParameter("dob"));
-			person.setDob(new Date(date.getTime()));
-		} catch (ParseException e) {
-			e.printStackTrace();
+		if (id == null) { /* New person */
+			person.setFirstName(request.getParameter("firstName"));
+			person.setLastName(request.getParameter("lastName"));
+			java.util.Date date = new java.util.Date();
+			SimpleDateFormat sDate = new SimpleDateFormat("dd/MM/yyyy");
+			
+			try {
+				date = sDate.parse(request.getParameter("dob"));
+				person.setDob(new Date(date.getTime()));
+			} catch (ParseException pe) {
+				pe.printStackTrace();
+			}
+		} else { /* Populate data from an already created person */
+			person.setId(handler.getId());
+			
+			try {
+				person = new PersonDAO().select(person);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		return person;
@@ -185,46 +199,51 @@ public class PersonService implements ICommand {
 	
 	@Override
 	public String execute() {
-		return handler();
-	}
-	
-	/**
-	 * 
-	 * @param pag
-	 * @return
-	 */
-	private String handler(){
 		
-		String page = "/index.jsp";
+		String page;
+		String entity = handler.getEntity();
+		String action = handler.getAction();
+		Integer result = -1;
 		
-		if (path.contains("person/new")) {
-			return this.addPerson();
-		} else if (path.contains("person/update")) {
-			return this.updatePerson();
-		} else if (path.contains("person/delete")) {
-			this.delPerson();
-			page = "redirect:person";
-		} else {
-			return listPersons(null);
+		if (entity.equals("person")) {
+			if (action.equals("lst")) {
+				result = this.lstPersons();
+			} else if (action.equals("new")) {
+				result = this.newPerson();
+			} else if (action.equals("add")) {
+				result = this.addPerson();
+			} else if (action.equals("edt")) {
+				result = this.edtPerson();
+			} else if (action.equals("upd")) {
+				result = this.updPerson();
+			} else if (action.equals("del")) {
+				result = this.delPerson();
+			}
 		}
+		
+		if (result == 0) {
+			page = handler.getPathOK(); 
+		} else {
+			page = handler.getPathKO();
+		}
+System.out.println(page);
 		return page;
 	}
-	
-	/**
-	 * This function checks if the string passed as an arg 
-	 * is a number.
-	 * @param num
-	 * @return boolean
-	 */
-	private boolean isNumeric(String num){
-		try {
-			Integer.parseInt(num);		
-			return true;
-		} catch (NumberFormatException nfe) {
-			System.out.println("No es numeric "+num);
-			nfe.printStackTrace();
-			return false;
-		}
-	}
 
+    /**
+     * This function checks if the string passed as an arg 
+     * is a number.
+     * @param num
+     * @return boolean
+     */
+    private boolean isNumeric(String num){
+            try {
+                    Integer.parseInt(num);          
+                    return true;
+            } catch (NumberFormatException nfe) {
+                    System.out.println("It is not numeric." + num);
+                    nfe.printStackTrace();
+                    return false;
+            }
+    }
 }

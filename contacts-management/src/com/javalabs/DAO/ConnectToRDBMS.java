@@ -19,8 +19,8 @@ public abstract class ConnectToRDBMS {
 	
 	@Resource(name = "jdbc/javalabs")
 	private DataSource ds = null;
-	private Connection connection = null;
-	 
+	protected Connection connection = null;
+	
 	public ConnectToRDBMS() {
 		
 	}
@@ -33,15 +33,23 @@ public abstract class ConnectToRDBMS {
 	 */
 	protected Connection getConnection() throws SQLException {
 		
-		if (ds != null) {
+		if (ds != null) { /* Connection through JDNI */
+			/* Open database connection using the DataSource */
 			connection = ds.getConnection();
-		} else { // 
+		} else { /* Connection through JDBC look up */ 
 			Context initCtx = null;
 			Context envCtx;
+			
 			try {
+				/* To setup the DataSource, first get an InitialContext */
 				initCtx = new InitialContext();
+				
+				/* Then lookup the connection. 
+				 * JNDI names start with java:com/env/ and the jdbc for JDBC */
 				envCtx = (Context) initCtx.lookup("java:comp/env");
 				ds = (DataSource) envCtx.lookup("jdbc/javalabs");
+				
+				/* Open database connection using the DataSource */
 				connection = ds.getConnection();
 			} catch (NamingException e) {
 				e.printStackTrace();

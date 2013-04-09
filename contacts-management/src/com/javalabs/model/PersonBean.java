@@ -2,12 +2,20 @@ package com.javalabs.model;
 
 import java.util.Date;
 
-public class Person {
+public class PersonBean {
 
 	private long id;
 	private String firstName;
 	private String lastName;
 	private Date dob;
+	
+	public PersonBean(){
+		
+	}
+	
+	public PersonBean(Long id){
+		this.id = id;
+	}
 	
 	public long getId() {
 		return id;
