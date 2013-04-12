@@ -1,52 +1,197 @@
-.container{
-    border: 1px solid black;
-    margin: 0 auto;
-    width: 960px;
-    padding: 5px;
-}
-#header{
-    padding: 5px;
+html,body {
+        padding: 0;
+        margin: 0;
 }
 
-#pers fieldset{
-    width: 310px;
-}
-#pers fieldset ul, #pers fieldset li{
-border:0; margin:0; padding:0; list-style:none;
-}
-#pers fieldset li{
-clear:both;
-list-style:none;
-padding-bottom:10px;
+header {
+    position:fixed;
+    top:0;
+    width:100%;
+    background-color:#333333;
+        padding:20px;
 }
 
-#pers fieldset input{
-float:left;
-}
-#pers fieldset label{
-width:140px;
-float:left;
-}
-
-.divButton{
-    clear: both;
-    margin-top: 30px;
-    margin-left: 30px;
-}
-.divButton button {
-    margin-right: 20px;
+footer {
+        background-color: #333;
+        width: 100%;
+        bottom: 0;
+        position: relative;
 }
 
-.link-person{
-    margin: 5px;
-}
-.link-person a{
-    color: blue;
-    font-size: 23px;
-}
-table {
-    border: 1px solid black;
-    padding: 5px;
+#topnav {
+    background-color: #333;
+    opacity: 1;
+    height: 40px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    overflow: visible;
 }
 
+#topnav a:visited {
+    color: #aaa;
+}
+#topnav a:hover {
+    background-color: #696969;
+    color: #fff;
+        
+}
+#topnav ul {
+    margin: auto;
+    width: 1024px;
+    padding: 0;
+}
+#topnav ul li {
+    display: block;
+    float: left;
+    font-size: 18px;
+    padding: 0 0.60em;
+}
+#topnav li a {
+        position:relative;
+        float:left;
+        display:block;
+        color:#aaa;
+        text-decoration:none;
+        text-align:center;
+        line-height:40px;
+        font-size:90%;
+}
 
+#topnav li a img{
+    position:absolute;
+    top:8px;
+    left:0px;
+    float:left
+}
+
+#topnav a.homebutton {
+    font-size: 16px;
+    color: #FFBF00;
+    margin-left: 210px;
+}
+
+#topnav ul {
+    overflow: hidden;
+}
+
+#bottomnav {
+    background-color: #333;
+    background-image: url(http://www.javalabs.com/img/icons/dark.png);
+    opacity: 1;
+    height: 100px;
+        left: 0;
+    right: 0;
+        bottom: 0;
+    overflow: visible;
+}
+
+#bottomnav a:visited {
+    color: #aaa;
+}
+#bottomnav a:hover {
+    background-color: #696969;
+    color: #fff;
+}
+#bottomnav ul {
+    margin: auto;
+    width: 1024px;
+    padding: 0;
+}
+#bottomnav ul li {
+    display: block;
+    float: left;
+    font-size: 18px;
+    padding: 0 0.60em;
+}
+#bottomnav li a {
+        position: relative;
+        float: left;
+        display: block;
+        color: #aaa;
+        text-decoration: none;
+        text-align: center;
+        line-height: 40px;
+        font-size: 90%;
+}
+
+#bottomnav li a img{
+    position: absolute;
+    top: 8px;
+    left: 0px;
+    float: left
+}
+
+#bottomnav a.homebutton {
+    font-size: 16px;
+    color: #FFBF00;
+    margin-left: 210px;
+}
+
+#bottomnav ul {
+    overflow: hidden;
+}
+
+div.figure {
+    float: right;
+    margin: 0em;
+    padding: 0em;
+}
+div.figure p {
+    text-align: center;
+    font-style: italic;
+    text-indent: 0;
+    margin: 0px;
+}
+
+#container ul {
+    padding-left: 0;
+}
+#container ul ul {
+    padding-left: 10px;
+}
+
+#container {
+    width: 1000px;
+    margin: auto;
+    margin-top: 50px;
+    -moz-border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 50px;
+}
+
+#leftcol, #rightcol, .article, .book {
+    float: left;
+}
+#leftcol, .article, .book {
+    margin-right: 15px;
+}
+
+#leftcol, #rightcol, .article, .book {
+    float: left;
+}
+#leftcol, .article, .book {
+    margin-right: 15px;
+}
+#leftcol {
+    width: 18%;
+    top: 44px;
+    font-size: 0.9em;
+}
+
+#rightcol {
+  width: 18%;
+  top: 44px;
+}
+
+#rightcol ul {
+    padding-left: 20px;
+}
+
+.article, .book {
+    background-color: #fff;
+    width: 60%;
+    top: 44px;
+}
