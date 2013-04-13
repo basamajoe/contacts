@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 public class Handler {
 
 	private HttpServletRequest request;
+	private String context = "";	/* Path of the context*/
 	private String entity = "";		/* Entity person... */
 	private String action = "lst";	/* Action to perform add, lst, upd, del */
 	private Long id = 0L;			/* Entity identifier */
@@ -30,6 +31,10 @@ public class Handler {
 		return request;
 	}
 
+	public String getContext() {
+		return context;
+	}
+	
 	public String getEntity() {
 		return entity;
 	}
@@ -62,14 +67,32 @@ public class Handler {
 		this.request = request;
 		parseRequest();
 	}
+		
+	private void parseRequest(){
+		
+		/* default options */
+		this.entity = "";
+		this.action = "lst";
+		this.id = 0L;
+		this.method = "GET";
+		
+		String uri = request.getRequestURI();
+		this.method = request.getMethod();
+		
+		this.path = parseUri(uri);
+		
+		this.pathOK = this.mapper(path);
+		this.pathKO = "/jsp/persons.jsp";
+System.out.println("Handler(parseReq):" + pathOK + " - " + pathKO);
+	}
 	
-	private String mapper(){
+	private String mapper(String path){
 		String newPath;
 		
 		// Get the inputStream --> This time we have specified the folder name too.  
 	    InputStream inputStream = this.getClass().getClassLoader()
                   .getResourceAsStream("/properties/mapping.properties");
-
+System.out.println("Handler(req): " + path);
 		try{
 			//load a properties file
     		prop.load(inputStream);
@@ -97,62 +120,62 @@ public class Handler {
 		return newPath;
 	}
 	
-	private void parseRequest(){
-		
-		/* default options */
-		entity = "";
-		action = "lst";
-		id = 0L;
-		method = "GET";
-		
-		String uri = request.getRequestURI();
-		method = request.getMethod();
-		
-		/* We delete first '/' -> /conext/servlet/path */
-		uri = uri.substring(1);
-		
+	private String parseUri(String uri){
+				
+		/* We delete first '/' -> /context/entity/path/id */
+		String u = uri.substring(1);
+System.out.println("Handler(parseuri): " + uri);		
 		/* Array organization
-		 * 0 - ContextPath
-		 * 1 - ServletPath (person)
+		 * 0 - ContextPath-context
+		 * 1 - ServletPath-Entity (person)
 		 * 2 - PathInfo (add, lst, del...)
 		 * 3 - PathInfo (id) 
 		 *
 		 * Path of the request */
-		String [] paths = uri.split("/");
-		path = "/" + paths[1]+ "/" + paths[2];
 		
-		pathOK = this.mapper();
-		pathKO = "/jsp/persons.jsp";
+		String [] paths = u.split("/");
 		
-		if ( paths.length == 4 ){
+		if ( paths.length >= 1 ) {
+			this.context = paths[0];
+		}
+		
+		if ( paths.length >= 2 ) {
+			this.path = "/" + paths[1];
+		}
+		
+		if ( paths.length >= 3) {
+			this.path = this.path + "/" + paths[2];
+		}
+		
+		if ( paths.length >= 4 ){
 			try {
-				id = Long.parseLong(paths[3]);
+				this.id = Long.parseLong(paths[3]);
 			} catch (NumberFormatException nfe) {
-				id = 0L;
+				this.id = 0L;
 				nfe.printStackTrace();
 			}
 		}
 		
 		if ( paths[1].contains("person")){
+			
+			this.entity = "person";
+			
 			if (paths[2].contains("lst")) {
-				entity = "person";
 				action = "lst";
 			} else if (paths[2].contains("new")) {
-				entity = "person";
 				action = "new";
 			} else if (paths[2].contains("add")) {
-				entity = "person";
 				action = "add";
 			} else if (paths[2].contains("edt")) {
-				entity = "person";
 				action = "edt";
 			} else if (paths[2].contains("upd")) {
-				entity = "person";
 				action = "upd";
 			} else if (paths[2].contains("del")) {
-				entity = "person";
 				action = "del";
 			}
 		}
+		
+System.out.println("Handler(lenght" + paths.length + "): " + path);
+		return path;
 	}
 }

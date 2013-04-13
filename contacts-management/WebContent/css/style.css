@@ -1,6 +1,6 @@
 html,body {
-        padding: 0;
-        margin: 0;
+    padding: 0;
+    margin: 0;
 }
 
 header {
@@ -12,13 +12,13 @@ header {
 }
 
 footer {
-        background-color: #333;
-        width: 100%;
-        bottom: 0;
-        position: relative;
+    background-color: #333;
+    width: 100%;
+    bottom: 0;
+    position: absolute;
 }
 
-#topnav {
+nav {
     background-color: #333;
     opacity: 1;
     height: 40px;
@@ -30,26 +30,26 @@ footer {
     overflow: visible;
 }
 
-#topnav a:visited {
+nav a:visited {
     color: #aaa;
 }
-#topnav a:hover {
+nav a:hover {
     background-color: #696969;
     color: #fff;
         
 }
-#topnav ul {
+nav ul {
     margin: auto;
     width: 1024px;
     padding: 0;
 }
-#topnav ul li {
+nav ul li {
     display: block;
     float: left;
     font-size: 18px;
     padding: 0 0.60em;
 }
-#topnav li a {
+nav li a {
         position:relative;
         float:left;
         display:block;
@@ -60,20 +60,20 @@ footer {
         font-size:90%;
 }
 
-#topnav li a img{
+nav li a img{
     position:absolute;
     top:8px;
     left:0px;
     float:left
 }
 
-#topnav a.homebutton {
+nav a.homebutton {
     font-size: 16px;
     color: #FFBF00;
     margin-left: 210px;
 }
 
-#topnav ul {
+nav ul {
     overflow: hidden;
 }
 
@@ -159,7 +159,7 @@ div.figure p {
     margin-top: 50px;
     -moz-border-radius: 15px;
     overflow: hidden;
-    margin-bottom: 50px;
+    margin-bottom: 100px;
 }
 
 #leftcol, #rightcol, .article, .book {

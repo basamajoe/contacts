@@ -28,7 +28,7 @@ public class PersonDAO extends ConnectToRDBMS
      */
     @Override
     public PersonBean select(PersonBean person) throws SQLException {
-                
+        
         try {
             connection = getConnection();
             preparedStatement = connection.
@@ -37,13 +37,11 @@ public class PersonDAO extends ConnectToRDBMS
             rs = preparedStatement.executeQuery();
 
             if (rs.next()) {
-                person = new PersonBean();
-                person.setId(rs.getInt("id"));
                 person.setFirstName(rs.getString("firstname"));
                 person.setLastName(rs.getString("lastname"));
                 person.setDob(rs.getDate("dob"));
             }
-           
+        
         } catch (SQLException e) {
             e.printStackTrace();
             throw e;
@@ -52,7 +50,7 @@ public class PersonDAO extends ConnectToRDBMS
             closeStatement(preparedStatement);
             closeConnection(connection);
         }
-
+System.out.println("PDao(upd): " + person.getId() + person.getFirstName() + person.getLastName()+person.getDob());
         return person;
     }
     
@@ -128,6 +126,7 @@ public class PersonDAO extends ConnectToRDBMS
             // Parameters start with 1
             preparedStatement.setLong(1, person.getId());
             preparedStatement.executeUpdate();
+            person.setId(0);
 
         } catch (SQLException e) {
         	e.printStackTrace();

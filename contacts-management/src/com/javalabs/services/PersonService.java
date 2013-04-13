@@ -26,6 +26,7 @@ public class PersonService implements IAction {
 	public PersonService(HttpServletRequest req) {
 		super();
 		this.request = req;
+		person = new PersonBean();
 		personDAO = new PersonDAO();
 		handler = new Handler(req);
 	}
@@ -43,7 +44,7 @@ public class PersonService implements IAction {
 		
 		Integer result = 0;
 
-		request.setAttribute("title", "New person");
+		request.setAttribute("title", "Create new person");
 		request.setAttribute("formAction", "person/add");
 		
 		return result;
@@ -59,8 +60,10 @@ public class PersonService implements IAction {
 
 		if (handler.getMethod().equalsIgnoreCase("post")) {	/* Create new person */
 			try {
-				personDAO.insert(populate());
+				personDAO.insert(populate(handler.getAction()));
 				request.setAttribute("msg", "Person added successfully!");
+				
+				request.setAttribute("persons", personDAO.getAllDetails());
 				result = 0;
 			} catch (SQLException e) {
 				request.setAttribute("err", e.getMessage());
@@ -82,6 +85,7 @@ public class PersonService implements IAction {
 		
 		try {
 			request.setAttribute("persons", personDAO.getAllDetails());
+			request.setAttribute("title", "List of persons");
 			result = 0;
 		} catch (SQLException e) {
 			request.setAttribute("err", e.getMessage());
@@ -100,12 +104,12 @@ public class PersonService implements IAction {
 	private Integer  edtPerson(){
 		Integer result = 0;
 		
-		if (handler.getMethod().equalsIgnoreCase("post")) {
-			person = populate();
+		//if (handler.getMethod().equalsIgnoreCase("post")) {
+			person = populate(handler.getAction());
 			request.setAttribute("person", person);
-			request.setAttribute("msg", "Person updated successfully!");
+			request.setAttribute("title", "Edit person");
 			request.setAttribute("formAction", "person/upd");
-		}
+		//}
 		
 		return result;
 	}
@@ -120,7 +124,7 @@ public class PersonService implements IAction {
 		if (handler.getMethod().equalsIgnoreCase("post")) {
 			
 			try {
-				person = personDAO.update(populate());
+				person = personDAO.update(populate(handler.getAction()));
 				request.setAttribute("person", person);
 				request.setAttribute("msg", "Person updated successfully!");
 				result = lstPersons();
@@ -144,7 +148,7 @@ public class PersonService implements IAction {
 	 */
 	private Integer delPerson(){
 		Integer result = 0;
-		
+System.out.println("PService(id del):" + handler.getId());
 		if (handler.getId() != 0){
 			try {
 				personDAO.delete(new PersonBean(handler.getId()));
@@ -167,34 +171,41 @@ public class PersonService implements IAction {
 	 * 
 	 * @return
 	 */
-	private PersonBean populate(){
+	private PersonBean populate(String action){
 		person = new PersonBean();
-
-		String id = request.getParameter("id");
 		
-		if (id == null) { /* New person */
-			person.setFirstName(request.getParameter("firstName"));
-			person.setLastName(request.getParameter("lastName"));
-			java.util.Date date = new java.util.Date();
-			SimpleDateFormat sDate = new SimpleDateFormat("dd/MM/yyyy");
-			
-			try {
-				date = sDate.parse(request.getParameter("dob"));
-				person.setDob(new Date(date.getTime()));
-			} catch (ParseException pe) {
-				pe.printStackTrace();
-			}
-		} else { /* Populate data from an already created person */
+		if ( action == "add" ) { /* New person */
+			populatePersonFromForm();
+		} else if ( action == "edt" ) { /* Populate data from an already created person DB */
 			person.setId(handler.getId());
 			
 			try {
-				person = new PersonDAO().select(person);
+				person = personDAO.select(person);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+		} else if ( action == "upd" ) { /* Populate data from an fields of the form */
+			
+			person.setId(Long.parseLong(request.getParameter("id")));
+			populatePersonFromForm();
 		}
 		
 		return person;
+	}
+	
+	private void populatePersonFromForm(){
+		
+		person.setFirstName(request.getParameter("firstName"));
+		person.setLastName(request.getParameter("lastName"));
+		java.util.Date date = new java.util.Date();
+		SimpleDateFormat sDate = new SimpleDateFormat("dd/MM/yyyy");
+		
+		try {
+			date = sDate.parse(request.getParameter("dob"));
+			person.setDob(new Date(date.getTime()));
+		} catch (ParseException pe) {
+			pe.printStackTrace();
+		}
 	}
 	
 	@Override
@@ -226,7 +237,7 @@ public class PersonService implements IAction {
 		} else {
 			page = handler.getPathKO();
 		}
-System.out.println(page);
+System.out.println("PService(Execute pge>" + action + "): " + page);
 		return page;
 	}
 
