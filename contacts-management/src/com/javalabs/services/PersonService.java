@@ -133,6 +133,7 @@ public class PersonService implements ICommand {
 			
 			try {
 				person = personDAO.update(populate(this.action));
+				//With redirect we lost request and attributes
 				request.setAttribute("title", "List of persons");
 				request.setAttribute("msg", "Person updated successfully!");
 				request.setAttribute("persons", personDAO.getAllDetails());
