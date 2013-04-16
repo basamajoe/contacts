@@ -16,7 +16,7 @@
     <meta name="keywords" content="Java, JSTL, DAO">
         
     <meta name="robots" content="index, follow">
-    <link href="../css/style.css" rel="stylesheet" type="text/css">
+    <link href='<c:out value="${url}css/style.css" />' rel="stylesheet" type="text/css">
 </head>
 <body>
     <!-- init header part -->

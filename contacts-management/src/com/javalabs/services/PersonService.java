@@ -1,23 +1,31 @@
 package com.javalabs.services;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
 import com.javalabs.DAO.PersonDAO;
-import com.javalabs.handler.Handler;
-import com.javalabs.handler.IAction;
+import com.javalabs.helper.ICommand;
 import com.javalabs.model.PersonBean;
 
-public class PersonService implements IAction {
+public class PersonService implements ICommand {
 
 	private HttpServletRequest request = null;
 	private PersonBean person = null;
 	private PersonDAO personDAO = null;
-	private Handler handler = null;
+	private Long id;
+	private String action = "";
+	private String method = "";
+	private String path = "";
+	private String pathOK = "";
+	private String pathKO = "";
 	
 	public PersonService() {
 		super();
@@ -26,14 +34,14 @@ public class PersonService implements IAction {
 	public PersonService(HttpServletRequest req) {
 		super();
 		this.request = req;
+		parseRequest();
 		person = new PersonBean();
 		personDAO = new PersonDAO();
-		handler = new Handler(req);
 	}
 	
 	public void setRequest(HttpServletRequest req) {
 		this.request = req;
-		handler.setRequest(req);
+		parseRequest();
 	}
 
 	/**
@@ -58,11 +66,11 @@ public class PersonService implements IAction {
 		
 		Integer result = 0;
 
-		if (handler.getMethod().equalsIgnoreCase("post")) {	/* Create new person */
+		if (this.method.equalsIgnoreCase("post")) {	/* Create new person */
 			try {
-				personDAO.insert(populate(handler.getAction()));
+				personDAO.insert(populate(this.action));
 				request.setAttribute("msg", "Person added successfully!");
-				
+				request.setAttribute("title", "List of persons");
 				request.setAttribute("persons", personDAO.getAllDetails());
 				result = 0;
 			} catch (SQLException e) {
@@ -105,7 +113,7 @@ public class PersonService implements IAction {
 		Integer result = 0;
 		
 		//if (handler.getMethod().equalsIgnoreCase("post")) {
-			person = populate(handler.getAction());
+			person = populate(this.action);
 			request.setAttribute("person", person);
 			request.setAttribute("title", "Edit person");
 			request.setAttribute("formAction", "person/upd");
@@ -121,12 +129,13 @@ public class PersonService implements IAction {
 	private Integer  updPerson(){
 		Integer result = 0;
 		
-		if (handler.getMethod().equalsIgnoreCase("post")) {
+		if (this.method.equalsIgnoreCase("post")) {
 			
 			try {
-				person = personDAO.update(populate(handler.getAction()));
-				request.setAttribute("person", person);
+				person = personDAO.update(populate(this.action));
+				request.setAttribute("title", "List of persons");
 				request.setAttribute("msg", "Person updated successfully!");
+				request.setAttribute("persons", personDAO.getAllDetails());
 				result = lstPersons();
 			} catch (SQLException e) {
 				request.setAttribute("err", e.getMessage());
@@ -148,10 +157,10 @@ public class PersonService implements IAction {
 	 */
 	private Integer delPerson(){
 		Integer result = 0;
-System.out.println("PService(id del):" + handler.getId());
-		if (handler.getId() != 0){
+System.out.println("PService(id del):" + this.id);
+		if (this.id != 0){
 			try {
-				personDAO.delete(new PersonBean(handler.getId()));
+				personDAO.delete(new PersonBean(this.id));
 				request.setAttribute("msg", "Person deleted successfully!");
 			} catch (SQLException e) {
 				request.setAttribute("err", e.getMessage());
@@ -177,7 +186,7 @@ System.out.println("PService(id del):" + handler.getId());
 		if ( action == "add" ) { /* New person */
 			populatePersonFromForm();
 		} else if ( action == "edt" ) { /* Populate data from an already created person DB */
-			person.setId(handler.getId());
+			person.setId(this.id);
 			
 			try {
 				person = personDAO.select(person);
@@ -210,37 +219,145 @@ System.out.println("PService(id del):" + handler.getId());
 	
 	@Override
 	public String execute() {
+		return handler();
+	}
+	
+	public String handler() {
 		
 		String page;
-		String entity = handler.getEntity();
-		String action = handler.getAction();
 		Integer result = -1;
 		
-		if (entity.equals("person")) {
-			if (action.equals("lst")) {
-				result = this.lstPersons();
-			} else if (action.equals("new")) {
-				result = this.newPerson();
-			} else if (action.equals("add")) {
-				result = this.addPerson();
-			} else if (action.equals("edt")) {
-				result = this.edtPerson();
-			} else if (action.equals("upd")) {
-				result = this.updPerson();
-			} else if (action.equals("del")) {
-				result = this.delPerson();
-			}
+		if (this.action.equals("lst")) {
+			result = this.lstPersons();
+		} else if (this.action.equals("new")) { /* Empty form */
+			result = this.newPerson();
+		} else if (this.action.equals("add")) { /* Add person data form */
+			result = this.addPerson();
+		} else if (this.action.equals("edt")) { /* Load data from person */
+			result = this.edtPerson();
+		} else if (this.action.equals("upd")) { /* Update data from person*/
+			result = this.updPerson();
+		} else if (this.action.equals("del")) { /* Delete person selected */
+			result = this.delPerson();
 		}
 		
 		if (result == 0) {
-			page = handler.getPathOK(); 
+			page = this.pathOK; 
 		} else {
-			page = handler.getPathKO();
+			page = this.pathKO;
 		}
 System.out.println("PService(Execute pge>" + action + "): " + page);
 		return page;
 	}
 
+	
+	private void parseRequest(){
+		
+		/* default options */
+		this.id = 0L;
+		this.action = "lst";
+		this.method = "GET";
+		
+		String uri = request.getRequestURI();
+		this.method = request.getMethod();
+		
+		this.path = parseUri(uri);
+		
+		this.pathOK = this.mapper(path);
+		this.pathKO = "/jsp/persons.jsp";
+	}
+	
+	private String mapper(String path){
+		
+		String newPath;
+		Properties prop = new Properties();
+		
+		// Get the inputStream --> This time we have specified the folder name too.  
+	    InputStream inputStream = this.getClass().getClassLoader()
+                  .getResourceAsStream("/properties/mapping.properties");
+System.out.println("PService(req): " + path);
+		try{
+			//load a properties file
+    		prop.load(inputStream);
+    		newPath = prop.getProperty(path);
+
+		} catch (FileNotFoundException fnfe) {
+    		fnfe.printStackTrace();
+    		System.out.println(fnfe.getCause());
+        	return null;
+        } catch (IOException ioe){
+        	ioe.printStackTrace();
+        	System.out.println(ioe.getCause());
+        	return null;
+        } finally {
+        	//close the stream to release system resources
+            try {
+                if (inputStream != null) {
+                	inputStream.close();
+                }
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+		
+		return newPath;
+	}
+	
+	
+	private String parseUri(String uri){
+				
+		/* We delete first '/' -> /context/entity/path/id */
+		String u = uri.substring(1);
+System.out.println("PService(parseuri): " + uri);		
+		/* Array organization
+		 * 0 - ContextPath-context
+		 * 1 - ServletPath-Entity (person)
+		 * 2 - PathInfo (add, lst, del...)
+		 * 3 - PathInfo (id) 
+		 *
+		 * Path of the request */
+		
+		String [] paths = u.split("/");
+				
+		if ( paths.length >= 2 ) {
+			this.path = "/" + paths[1];
+		}
+		
+		if ( paths.length >= 3) {
+			this.path = this.path + "/" + paths[2];
+		}
+		
+		if ( paths.length >= 4 ){
+			try {
+				if (isNumeric(paths[3])){
+					this.id = Long.parseLong(paths[3]);
+				} else {
+					this.id = 0L;
+				}
+				this.id = Long.parseLong(paths[3]);
+			} catch (NumberFormatException nfe) {
+				this.id = 0L;
+				nfe.printStackTrace();
+			}
+		}
+			
+		if (paths[2].contains("lst")) {
+			action = "lst";
+		} else if (paths[2].contains("new")) {
+			action = "new";
+		} else if (paths[2].contains("add")) {
+			action = "add";
+		} else if (paths[2].contains("edt")) {
+			action = "edt";
+		} else if (paths[2].contains("upd")) {
+			action = "upd";
+		} else if (paths[2].contains("del")) {
+			action = "del";
+		}
+		
+		return path;
+	}
+	
     /**
      * This function checks if the string passed as an arg 
      * is a number.
